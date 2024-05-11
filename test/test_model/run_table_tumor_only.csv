@@ -1,0 +1,22 @@
+Sequencing Batch ID,Tumor Fastq R1,Tumor Fastq R2,Normal Fastq R1,Normal Fastq R2,BED File,Output Name
+NGS1070824,VGH01_T_R1.fastq.gz,VGH01_T_R2.fastq.gz,,,SureSelectClinicalResearchExomeV2_67.29Mbp_GRCh38_fix.bed,VGH01_T
+NGS1120674,YMUH011_T_S2_R1_001.fastq.gz,YMUH011_T_S2_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH011_T
+NGS1120674,YMUH012_T_S4_R1_001.fastq.gz,YMUH012_T_S4_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH012_T
+NGS1120674,YMUH013_T_S6_R1_001.fastq.gz,YMUH013_T_S6_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH013_T
+NGS1120674,YMUH016_T_S8_R1_001.fastq.gz,YMUH016_T_S8_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH016_T
+NGS1120674,YMUH019_T_S10_R1_001.fastq.gz,YMUH019_T_S10_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH019_T
+NGS1120674,YMUH020_T_S12_R1_001.fastq.gz,YMUH020_T_S12_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH020_T
+NGS1120674,YMUH021_T_S14_R1_001.fastq.gz,YMUH021_T_S14_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH021_T
+NGS1120674,YMUH023_T_S16_R1_001.fastq.gz,YMUH023_T_S16_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH023_T
+NGS1120674,YMUH024_T_S18_R1_001.fastq.gz,YMUH024_T_S18_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,YMUH024_T
+NGS1120674-1,VGH009_T_S20_R1_001.fastq.gz,VGH009_T_S20_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH009_T
+NGS1120674-1,VGH010_T_S22_R1_001.fastq.gz,VGH010_T_S22_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH010_T
+NGS1120674-1,VGH011_T_S24_R1_001.fastq.gz,VGH011_T_S24_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH011_T
+NGS1120674-1,VGH012_T_S26_R1_001.fastq.gz,VGH012_T_S26_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH012_T
+NGS1120674-1,VGH013_T_S28_R1_001.fastq.gz,VGH013_T_S28_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH013_T
+NGS1120674-1,VGH014_T_S30_R1_001.fastq.gz,VGH014_T_S30_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH014_T
+NGS1120674-1,VGH015_T_S32_R1_001.fastq.gz,VGH015_T_S32_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH015_T
+NGS1120674-1,VGH016_T_S34_R1_001.fastq.gz,VGH016_T_S34_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH016_T
+NGS1120674-1,VGH021_T_S36_R1_001.fastq.gz,VGH021_T_S36_R2_001.fastq.gz,,,SureSelectHumanAllExonV8_41.6Mbp_hg38_fix.bed,VGH021_T
+TS231220015,VGH025_T_S10_L001_R1_001.fastq.gz,VGH025_T_S10_L001_R2_001.fastq.gz,,,KAPA_HyperExome_hg38_capture_targets_fix.bed,VGH025_T
+TS231220015,VGH026_T_S12_L001_R1_001.fastq.gz,VGH026_T_S12_L001_R2_001.fastq.gz,,,KAPA_HyperExome_hg38_capture_targets_fix.bed,VGH026_T

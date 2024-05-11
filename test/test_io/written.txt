@@ -1,0 +1,4 @@
+User: me
+Host: 255.255.255.255
+skip-otu
+colors: '#59A257,#4A759D'

@@ -1,0 +1,167 @@
+from setup import TestCase
+from src.model import BuildSubmissionCommands, build_execution_script, build_submit_cmd
+
+
+class TestBuildSubmissionCommands(TestCase):
+
+    def setUp(self):
+        self.set_up(py_path=__file__)
+
+    def tearDown(self):
+        self.tear_down()
+
+    def test_tn_paired(self):
+        actual = BuildSubmissionCommands().main(
+            run_table=f'{self.indir}/run_table.csv',
+            parameters={
+                'NAS User': 'user',
+                'NAS Local IP': '255.255.255.255',
+                'NAS Port': 22,
+            }
+        )
+
+    def test_tumor_only(self):
+        actual = BuildSubmissionCommands().main(
+            run_table=f'{self.indir}/run_table_tumor_only.csv',
+            parameters={
+                'NAS User': 'user',
+                'NAS Local IP': '255.255.255.255',
+                'NAS Port': 22,
+            }
+        )
+
+
+class TestFunctions(TestCase):
+
+    def test_build_execution_script_tn_paired(self):
+        expected = """\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/normal_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/normal_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+python somatic_pipeline-1.0.0 main \\
+--ref-fa='./resource/GRCh38.primary_assembly.genome.fa' \\
+--tumor-fq1='./fastq/tumor_R1.fastq.gz' \\
+--tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
+--normal-fq1='./fastq/normal_R1.fastq.gz' \\
+--normal-fq2='./fastq/normal_R2.fastq.gz' \\
+--read-aligner='bwa' \\
+--bqsr-known-variant-vcf='./resource/dbsnp.vcf.gz' \\
+--variant-callers='mutect2,muse,lofreq' \\
+--min-snv-callers=1 \\
+--min-indel-callers=1 \\
+--panel-of-normal-vcf='./resource/pon.vcf.gz' \\
+--call-region-bed='./resource/call-region.bed' \\
+--variant-removal-flags='clustered_events,panel_of_normals,Tier5' \\
+--vep-db-tar-gz='./resource/vep_cache' \\
+--vep-db-type='merged' \\
+--vep-buffer-size=5000 \\
+--threads=4 \\
+--outdir='outdir' \\
+2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
+rm -r 'outdir'   &&   \\
+rm './fastq/tumor_R1.fastq.gz'   &&   \\
+rm './fastq/tumor_R2.fastq.gz'   &&   \\
+rm './fastq/normal_R1.fastq.gz'   &&   \\
+rm './fastq/normal_R2.fastq.gz'"""
+
+        actual = build_execution_script(
+            nas_user='precision',
+            nas_ip='192.168.0.101',
+            nas_port=20,
+            nas_fastq_dir='~/NAS_FASTQ/',
+            nas_dst_dir='~/Production/',
+            tumor_fq1='tumor_R1.fastq.gz',
+            tumor_fq2='tumor_R2.fastq.gz',
+            normal_fq1='normal_R1.fastq.gz',
+            normal_fq2='normal_R2.fastq.gz',
+            local_fastq_dir='./fastq/',
+            somatic_pipeline='somatic_pipeline-1.0.0',
+            ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
+            read_aligner='bwa',
+            bqsr_known_variant_vcf='./resource/dbsnp.vcf.gz',
+            variant_callers='mutect2,muse,lofreq',
+            min_snv_callers=1,
+            min_indel_callers=1,
+            panel_of_normal_vcf='./resource/pon.vcf.gz',
+            call_region_bed='./resource/call-region.bed',
+            variant_removal_flags='clustered_events,panel_of_normals,Tier5',
+            vep_db_tar_gz='./resource/vep_cache',
+            vep_db_type='merged',
+            vep_buffer_size=5000,
+            threads=4,
+            outdir='outdir'
+        )
+        self.assertEqual(expected, actual)
+
+    def test_build_execution_script_tumor_only(self):
+        expected = """\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+python somatic_pipeline-1.0.0 main \\
+--ref-fa='./resource/GRCh38.primary_assembly.genome.fa' \\
+--tumor-fq1='./fastq/tumor_R1.fastq.gz' \\
+--tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
+--normal-fq1='None' \\
+--normal-fq2='None' \\
+--read-aligner='bwa' \\
+--bqsr-known-variant-vcf='./resource/dbsnp.vcf.gz' \\
+--variant-callers='mutect2,muse,lofreq' \\
+--min-snv-callers=1 \\
+--min-indel-callers=1 \\
+--panel-of-normal-vcf='./resource/pon.vcf.gz' \\
+--call-region-bed='./resource/call-region.bed' \\
+--variant-removal-flags='clustered_events,panel_of_normals,Tier5' \\
+--vep-db-tar-gz='./resource/vep_cache' \\
+--vep-db-type='merged' \\
+--vep-buffer-size=5000 \\
+--threads=4 \\
+--outdir='outdir' \\
+2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
+rm -r 'outdir'   &&   \\
+rm './fastq/tumor_R1.fastq.gz'   &&   \\
+rm './fastq/tumor_R2.fastq.gz'"""
+
+        actual = build_execution_script(
+            nas_user='precision',
+            nas_ip='192.168.0.101',
+            nas_port=20,
+            nas_fastq_dir='~/NAS_FASTQ/',
+            nas_dst_dir='~/Production/',
+            tumor_fq1='tumor_R1.fastq.gz',
+            tumor_fq2='tumor_R2.fastq.gz',
+            normal_fq1=None,
+            normal_fq2=None,
+            local_fastq_dir='./fastq/',
+            somatic_pipeline='somatic_pipeline-1.0.0',
+            ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
+            read_aligner='bwa',
+            bqsr_known_variant_vcf='./resource/dbsnp.vcf.gz',
+            variant_callers='mutect2,muse,lofreq',
+            min_snv_callers=1,
+            min_indel_callers=1,
+            panel_of_normal_vcf='./resource/pon.vcf.gz',
+            call_region_bed='./resource/call-region.bed',
+            variant_removal_flags='clustered_events,panel_of_normals,Tier5',
+            vep_db_tar_gz='./resource/vep_cache',
+            vep_db_type='merged',
+            vep_buffer_size=5000,
+            threads=4,
+            outdir='outdir'
+        )
+        self.assertEqual(expected, actual)
+
+    def test_build_submit_cmd(self):
+        expected = '''\
+mkdir -p "outdir"   &&   \\
+echo "BASH SCRIPT" > "outdir/commands.txt"   &&   \\
+screen -S job_name -dm bash "outdir/commands.txt"
+'''
+        actual = build_submit_cmd(
+            job_name='job_name',
+            outdir='outdir',
+            bash_script='BASH SCRIPT'
+        )
+        self.assertEqual(expected, actual)
