@@ -1,5 +1,6 @@
+import pandas as pd
 from setup import TestCase
-from src.model import BuildSubmissionCommands, build_execution_script, build_submit_cmd
+from src.model import BuildSubmissionCommands, BuildExecutionScript, build_submit_cmd
 
 
 class TestBuildSubmissionCommands(TestCase):
@@ -31,21 +32,36 @@ class TestBuildSubmissionCommands(TestCase):
         )
 
 
-class TestFunctions(TestCase):
+class TestBuildExecutionScript(TestCase):
 
-    def test_build_execution_script_tn_paired(self):
+    def test_tn_paired(self):
+        parameters = {
+
+        }
+        sample_row = pd.Series({
+            'Sequencing Batch ID': 'SEQUENCING_BATCH_ID',
+            'Tumor Fastq R1': 'TUMOR_R1.fastq.gz',
+            'Tumor Fastq R2': 'TUMOR_R2.fastq.gz',
+            'Normal Fastq R1': 'NORMAL_R1.fastq.gz',
+            'Normal Fastq R2': 'NORMAL_R2.fastq.gz',
+            'Output Name': 'OUTPUT_NAME',
+            'BED File': 'BED_FILE.bed',
+        })
+        actual = BuildExecutionScript().main(
+            parameters=parameters,
+            sample_row=sample_row)
         expected = """\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/normal_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/normal_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
 python somatic_pipeline-1.0.0 main \\
---ref-fa='./resource/GRCh38.primary_assembly.genome.fa' \\
---tumor-fq1='./fastq/tumor_R1.fastq.gz' \\
---tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
---normal-fq1='./fastq/normal_R1.fastq.gz' \\
---normal-fq2='./fastq/normal_R2.fastq.gz' \\
---outdir='outdir' \\
+--ref-fa='resource/GRCh38.primary_assembly.genome.fa' \\
+--tumor-fq1='./fastq/TUMOR_R1.fastq.gz' \\
+--tumor-fq2='./fastq/TUMOR_R2.fastq.gz' \\
+--normal-fq1='./fastq/NORMAL_R1.fastq.gz' \\
+--normal-fq2='./fastq/NORMAL_R2.fastq.gz' \\
+--outdir='OUTPUT_NAME' \\
 --threads=4 \\
 --umi-length=0 \\
 --clip-r1-5-prime=0 \\
@@ -53,10 +69,10 @@ python somatic_pipeline-1.0.0 main \\
 --read-aligner='bwa' \\
  \\
 --bqsr-known-variant-vcf='None' \\
---discard-bam \\
+ \\
 --variant-callers='mutect2,muse,lofreq' \\
  \\
---call-region-bed='None' \\
+--call-region-bed='resource/bed/BED_FILE.bed' \\
 --panel-of-normal-vcf='None' \\
 --germline-resource-vcf='None' \\
 --variant-flagging-criteria='None' \\
@@ -68,100 +84,81 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
-2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
-rm -r 'outdir'   &&   \\
-rm './fastq/tumor_R1.fastq.gz'   &&   \\
-rm './fastq/tumor_R2.fastq.gz'   &&   \\
-rm './fastq/normal_R1.fastq.gz'   &&   \\
-rm './fastq/normal_R2.fastq.gz'"""
-
-        actual = build_execution_script(
-            nas_user='precision',
-            nas_ip='192.168.0.101',
-            nas_port=20,
-            nas_fastq_dir='~/NAS_FASTQ/',
-            nas_dst_dir='~/Production/',
-            tumor_fq1='tumor_R1.fastq.gz',
-            tumor_fq2='tumor_R2.fastq.gz',
-            normal_fq1='normal_R1.fastq.gz',
-            normal_fq2='normal_R2.fastq.gz',
-            local_fastq_dir='./fastq/',
-            somatic_pipeline='somatic_pipeline-1.0.0',
-            ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
-            outdir='outdir',
-        )
+2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' @255.255.255.255:'/'   &&   \\
+rm -r 'OUTPUT_NAME'   &&   \\
+rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
+rm './fastq/TUMOR_R2.fastq.gz'   &&   \\
+rm './fastq/NORMAL_R1.fastq.gz'   &&   \\
+rm './fastq/NORMAL_R2.fastq.gz'"""
         self.assertEqual(expected, actual)
 
-    def test_build_execution_script_tumor_only(self):
+    def test_tumor_only(self):
+        parameters = {
+
+        }
+        sample_row = pd.Series({
+            'Sequencing Batch ID': 'SEQUENCING_BATCH_ID',
+            'Tumor Fastq R1': 'TUMOR_R1.fastq.gz',
+            'Tumor Fastq R2': 'TUMOR_R2.fastq.gz',
+            'Output Name': 'OUTPUT_NAME',
+            'BED File': 'BED_FILE.bed',
+        })
+        actual = BuildExecutionScript().main(
+            parameters=parameters,
+            sample_row=sample_row
+        )
         expected = """\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R1.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' precision@192.168.0.101:'~/NAS_FASTQ/tumor_R2.fastq.gz' './fastq/' 2>&1 > 'outdir/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' @255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
 python somatic_pipeline-1.0.0 main \\
---ref-fa='./resource/GRCh38.primary_assembly.genome.fa' \\
---tumor-fq1='./fastq/tumor_R1.fastq.gz' \\
---tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
+--ref-fa='resource/GRCh38.primary_assembly.genome.fa' \\
+--tumor-fq1='./fastq/TUMOR_R1.fastq.gz' \\
+--tumor-fq2='./fastq/TUMOR_R2.fastq.gz' \\
 --normal-fq1='None' \\
 --normal-fq2='None' \\
---outdir='outdir' \\
+--outdir='OUTPUT_NAME' \\
 --threads=4 \\
 --umi-length=0 \\
 --clip-r1-5-prime=0 \\
 --clip-r2-5-prime=0 \\
 --read-aligner='bwa' \\
---skip-mark-duplicates \\
+ \\
 --bqsr-known-variant-vcf='None' \\
---discard-bam \\
+ \\
 --variant-callers='mutect2,muse,lofreq' \\
---skip-variant-calling \\
---call-region-bed='None' \\
+ \\
+--call-region-bed='resource/bed/BED_FILE.bed' \\
 --panel-of-normal-vcf='None' \\
 --germline-resource-vcf='None' \\
 --variant-flagging-criteria='None' \\
 --variant-removal-flags='None' \\
---only-pass \\
+ \\
 --min-snv-callers=1 \\
 --min-indel-callers=1 \\
---skip-variant-annotation \\
+ \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
-2>&1 > 'outdir/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
-rm -r 'outdir'   &&   \\
-rm './fastq/tumor_R1.fastq.gz'   &&   \\
-rm './fastq/tumor_R2.fastq.gz'"""
-
-        actual = build_execution_script(
-            nas_user='precision',
-            nas_ip='192.168.0.101',
-            nas_port=20,
-            nas_fastq_dir='~/NAS_FASTQ/',
-            nas_dst_dir='~/Production/',
-            tumor_fq1='tumor_R1.fastq.gz',
-            tumor_fq2='tumor_R2.fastq.gz',
-            normal_fq1=None,
-            normal_fq2=None,
-            local_fastq_dir='./fastq/',
-            somatic_pipeline='somatic_pipeline-1.0.0',
-            outdir='outdir',
-            ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
-            skip_mark_duplicates=True,
-            skip_variant_calling=True,
-            only_pass=True,
-            skip_variant_annotation=True,
-        )
+2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' @255.255.255.255:'/'   &&   \\
+rm -r 'OUTPUT_NAME'   &&   \\
+rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
+rm './fastq/TUMOR_R2.fastq.gz'"""
         self.assertEqual(expected, actual)
 
-    def test_build_submit_cmd(self):
-        expected = '''\
-mkdir -p "outdir"   &&   \\
-echo "BASH SCRIPT" > "outdir/commands.txt"   &&   \\
-screen -S job_name -dm bash "outdir/commands.txt"
-'''
+
+class TestBuildSubmitCmd(TestCase):
+
+    def test_main(self):
         actual = build_submit_cmd(
             job_name='job_name',
             outdir='outdir',
             script='BASH SCRIPT'
         )
+        expected = '''\
+mkdir -p "outdir"   &&   \\
+echo "BASH SCRIPT" > "outdir/commands.txt"   &&   \\
+screen -S job_name -dm bash "outdir/commands.txt"
+'''
         self.assertEqual(expected, actual)
