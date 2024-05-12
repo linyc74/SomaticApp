@@ -127,7 +127,7 @@ class BuildExecutionScript:
 
     def set_stdout(self):
         outdir = self.sample_row['Output Name']
-        self.stdout = f"2>&1 > '{outdir}/progress.txt'"
+        self.stdout = f"2>&1 >> '{outdir}/progress.txt'"
 
     def set_rsync_fastq_cmds(self):
         p = self.parameters

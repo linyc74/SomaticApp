@@ -54,10 +54,10 @@ class TestBuildExecutionScript(TestCase):
         actual = BuildExecutionScript().main(parameters=parameters, sample_row=sample_row)
 
         expected = """\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R1.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/NORMAL_R2.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 python somatic_pipeline-1.0.0 main \\
 --tumor-fq1='./fastq/TUMOR_R1.fastq.gz' \\
 --tumor-fq2='./fastq/TUMOR_R2.fastq.gz' \\
@@ -83,8 +83,8 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
-2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
 rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
 rm './fastq/TUMOR_R2.fastq.gz'   &&   \\
@@ -111,8 +111,8 @@ rm './fastq/NORMAL_R2.fastq.gz'"""
         actual = BuildExecutionScript().main(parameters=parameters, sample_row=sample_row)
 
         expected = """\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R1.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' me@255.255.255.255:'/SEQUENCING_BATCH_ID/TUMOR_R2.fastq.gz' './fastq/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 python somatic_pipeline-1.0.0 main \\
 --tumor-fq1='./fastq/TUMOR_R1.fastq.gz' \\
 --tumor-fq2='./fastq/TUMOR_R2.fastq.gz' \\
@@ -136,8 +136,8 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
-2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 > 'OUTPUT_NAME/progress.txt'   &&   \\
+2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
 rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
 rm './fastq/TUMOR_R2.fastq.gz'"""
