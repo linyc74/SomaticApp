@@ -6,7 +6,6 @@ DEFAULT_KEY_VALUES = {
     'Compute User': [''],
     'Compute Public IP': ['255.255.255.255'],
     'Compute Port': ['22'],
-
     'Somatic Pipeline': ['somatic_pipeline-1.0.0'],
     'BED Directory': ['resource/bed'],
 
@@ -17,17 +16,27 @@ DEFAULT_KEY_VALUES = {
     'NAS Destination Directory': [''],
 
     'ref-fa': [''],
-    'read-aligner': [''],
+    'threads': [4],
+    'umi-length': [0],
+    'clip-r1-5-prime': [0],
+    'clip-r2-5-prime': [0],
+    'read-aligner': ['bwa'],
+    'skip-mark-duplicates': False,
     'bqsr-known-variant-vcf': [''],
-    'variant-callers': [''],
-    'min-snv-callers': [1],
-    'min-indel-callers': ['1'],
+    'discard-bam': False,
+    'variant-callers': ['mutect2,muse,lofreq'],
+    'skip-variant-calling': False,
     'panel-of-normal-vcf': [''],
-    'variant-removal-flags': [''],
+    'germline-resource-vcf': [''],
+    'variant-flagging-criteria': ['None'],
+    'variant-removal-flags': ['None'],
+    'only-pass': False,
+    'min-snv-callers': [1],
+    'min-indel-callers': [1],
+    'skip-variant-annotation': False,
     'vep-db-tar-gz': [''],
     'vep-db-type': ['merge'],
-    'vep-buffer-size': ['5000'],
-    'threads': ['4'],
+    'vep-buffer-size': [5000],
 }
 
 
@@ -59,7 +68,10 @@ class BuildSubmissionCommands:
     def load_default_parameters(self):
         for key, values in DEFAULT_KEY_VALUES.items():
             if key not in self.parameters:
-                self.parameters[key] = values[0]
+                if type(values) is bool:
+                    self.parameters[key] = values
+                else:  # list
+                    self.parameters[key] = values[0]
 
     def build_one_command(self, row: pd.Series):
         p = self.parameters
@@ -74,7 +86,7 @@ class BuildSubmissionCommands:
         if pd.isna(normal_fq2):
             normal_fq2 = None
 
-        bash_script = build_execution_script(
+        script = build_execution_script(
             nas_user=p['NAS User'],
             nas_ip=p['NAS Local IP'],
             nas_port=p['NAS Port'],
@@ -87,6 +99,9 @@ class BuildSubmissionCommands:
             local_fastq_dir=self.LOCAL_FASTQ_DIR,
             somatic_pipeline=p['Somatic Pipeline'],
             ref_fa=p['ref-fa'],
+            outdir=row['Output Name'],
+            threads=p['threads'],
+            umi_length=p['umi-length'],
             read_aligner=p['read-aligner'],
             bqsr_known_variant_vcf=p['bqsr-known-variant-vcf'],
             variant_callers=p['variant-callers'],
@@ -98,14 +113,12 @@ class BuildSubmissionCommands:
             vep_db_tar_gz=p['vep-db-tar-gz'],
             vep_db_type=p['vep-db-type'],
             vep_buffer_size=p['vep-buffer-size'],
-            threads=p['threads'],
-            outdir=row['Output Name'],
         )
 
         cmd = build_submit_cmd(
             job_name=row['Output Name'],
             outdir=row['Output Name'],
-            bash_script=bash_script
+            script=script
         )
 
         self.commands.append(cmd)
@@ -124,19 +137,29 @@ def build_execution_script(
         local_fastq_dir: str,
         somatic_pipeline: str,
         ref_fa: str,
-        read_aligner: str,
-        bqsr_known_variant_vcf: str,
-        variant_callers: str,
-        min_snv_callers: int,
-        min_indel_callers: int,
-        panel_of_normal_vcf: str,
-        call_region_bed: str,
-        variant_removal_flags: str,
-        vep_db_tar_gz: str,
-        vep_db_type: str,
-        vep_buffer_size: int,
-        threads: int,
-        outdir: str) -> str:
+        outdir: str,
+        threads: int = 4,
+        umi_length: int = 0,
+        clip_r1_5_prime: int = 0,
+        clip_r2_5_prime: int = 0,
+        read_aligner: str = 'bwa',
+        skip_mark_duplicates: bool = False,
+        bqsr_known_variant_vcf: str = 'None',
+        discard_bam: bool = True,
+        variant_callers: str = 'mutect2,muse,lofreq',
+        skip_variant_calling: bool = False,
+        call_region_bed: str = 'None',
+        panel_of_normal_vcf: str = 'None',
+        germline_resource_vcf: str = 'None',
+        variant_flagging_criteria: str = 'None',
+        variant_removal_flags: str = 'None',
+        only_pass: bool = False,
+        min_snv_callers: int = 1,
+        min_indel_callers: int = 1,
+        skip_variant_annotation: bool = False,
+        vep_db_tar_gz: str = 'None',
+        vep_db_type: str = 'merged',
+        vep_buffer_size: int = 5000) -> str:
 
     nas_fastq_dir = nas_fastq_dir.rstrip('/')
     nas_dst_dir = nas_dst_dir.rstrip('/')
@@ -171,19 +194,29 @@ python {somatic_pipeline} main \\
 --tumor-fq2='{local_fastq_dir}/{tumor_fq2}' \\
 --normal-fq1='{n1}' \\
 --normal-fq2='{n2}' \\
+--outdir='{outdir}' \\
+--threads={threads} \\
+--umi-length={umi_length} \\
+--clip-r1-5-prime={clip_r1_5_prime} \\
+--clip-r2-5-prime={clip_r2_5_prime} \\
 --read-aligner='{read_aligner}' \\
+{'--skip-mark-duplicates' if skip_mark_duplicates else ''} \\
 --bqsr-known-variant-vcf='{bqsr_known_variant_vcf}' \\
+{'--discard-bam' if discard_bam else ''} \\
 --variant-callers='{variant_callers}' \\
+{'--skip-variant-calling' if skip_variant_calling else ''} \\
+--call-region-bed='{call_region_bed}' \\
+--panel-of-normal-vcf='{panel_of_normal_vcf}' \\
+--germline-resource-vcf='{germline_resource_vcf}' \\
+--variant-flagging-criteria='{variant_flagging_criteria}' \\
+--variant-removal-flags='{variant_removal_flags}' \\
+{'--only-pass' if only_pass else ''} \\
 --min-snv-callers={min_snv_callers} \\
 --min-indel-callers={min_indel_callers} \\
---panel-of-normal-vcf='{panel_of_normal_vcf}' \\
---call-region-bed='{call_region_bed}' \\
---variant-removal-flags='{variant_removal_flags}' \\
+{'--skip-variant-annotation' if skip_variant_annotation else ''} \\
 --vep-db-tar-gz='{vep_db_tar_gz}' \\
 --vep-db-type='{vep_db_type}' \\
 --vep-buffer-size={vep_buffer_size} \\
---threads={threads} \\
---outdir='{outdir}' \\
 {stdout}'''
 
     rsync_output_cmd = f"rsync -avz -e 'ssh -p {nas_port}' '{outdir}' {nas_user}@{nas_ip}:'{nas_dst_dir}/'"
@@ -208,7 +241,7 @@ python {somatic_pipeline} main \\
 def build_submit_cmd(
         job_name: str,
         outdir: str,
-        bash_script: str) -> str:
+        script: str) -> str:
 
     outdir = outdir.rstrip('/')
     cmd_txt = f'{outdir}/commands.txt'
@@ -218,7 +251,7 @@ def build_submit_cmd(
 
     cmd = f'''\
 mkdir -p "{outdir}"   &&   \\
-echo "{bash_script}" > "{cmd_txt}"   &&   \\
+echo "{script}" > "{cmd_txt}"   &&   \\
 screen -S {job_name} -dm bash "{cmd_txt}"
 '''
 

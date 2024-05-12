@@ -45,19 +45,29 @@ python somatic_pipeline-1.0.0 main \\
 --tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
 --normal-fq1='./fastq/normal_R1.fastq.gz' \\
 --normal-fq2='./fastq/normal_R2.fastq.gz' \\
+--outdir='outdir' \\
+--threads=4 \\
+--umi-length=0 \\
+--clip-r1-5-prime=0 \\
+--clip-r2-5-prime=0 \\
 --read-aligner='bwa' \\
---bqsr-known-variant-vcf='./resource/dbsnp.vcf.gz' \\
+ \\
+--bqsr-known-variant-vcf='None' \\
+--discard-bam \\
 --variant-callers='mutect2,muse,lofreq' \\
+ \\
+--call-region-bed='None' \\
+--panel-of-normal-vcf='None' \\
+--germline-resource-vcf='None' \\
+--variant-flagging-criteria='None' \\
+--variant-removal-flags='None' \\
+ \\
 --min-snv-callers=1 \\
 --min-indel-callers=1 \\
---panel-of-normal-vcf='./resource/pon.vcf.gz' \\
---call-region-bed='./resource/call-region.bed' \\
---variant-removal-flags='clustered_events,panel_of_normals,Tier5' \\
---vep-db-tar-gz='./resource/vep_cache' \\
+ \\
+--vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
---threads=4 \\
---outdir='outdir' \\
 2>&1 > 'outdir/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
 rm -r 'outdir'   &&   \\
@@ -79,19 +89,7 @@ rm './fastq/normal_R2.fastq.gz'"""
             local_fastq_dir='./fastq/',
             somatic_pipeline='somatic_pipeline-1.0.0',
             ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
-            read_aligner='bwa',
-            bqsr_known_variant_vcf='./resource/dbsnp.vcf.gz',
-            variant_callers='mutect2,muse,lofreq',
-            min_snv_callers=1,
-            min_indel_callers=1,
-            panel_of_normal_vcf='./resource/pon.vcf.gz',
-            call_region_bed='./resource/call-region.bed',
-            variant_removal_flags='clustered_events,panel_of_normals,Tier5',
-            vep_db_tar_gz='./resource/vep_cache',
-            vep_db_type='merged',
-            vep_buffer_size=5000,
-            threads=4,
-            outdir='outdir'
+            outdir='outdir',
         )
         self.assertEqual(expected, actual)
 
@@ -105,19 +103,29 @@ python somatic_pipeline-1.0.0 main \\
 --tumor-fq2='./fastq/tumor_R2.fastq.gz' \\
 --normal-fq1='None' \\
 --normal-fq2='None' \\
+--outdir='outdir' \\
+--threads=4 \\
+--umi-length=0 \\
+--clip-r1-5-prime=0 \\
+--clip-r2-5-prime=0 \\
 --read-aligner='bwa' \\
---bqsr-known-variant-vcf='./resource/dbsnp.vcf.gz' \\
+--skip-mark-duplicates \\
+--bqsr-known-variant-vcf='None' \\
+--discard-bam \\
 --variant-callers='mutect2,muse,lofreq' \\
+--skip-variant-calling \\
+--call-region-bed='None' \\
+--panel-of-normal-vcf='None' \\
+--germline-resource-vcf='None' \\
+--variant-flagging-criteria='None' \\
+--variant-removal-flags='None' \\
+--only-pass \\
 --min-snv-callers=1 \\
 --min-indel-callers=1 \\
---panel-of-normal-vcf='./resource/pon.vcf.gz' \\
---call-region-bed='./resource/call-region.bed' \\
---variant-removal-flags='clustered_events,panel_of_normals,Tier5' \\
---vep-db-tar-gz='./resource/vep_cache' \\
+--skip-variant-annotation \\
+--vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
---threads=4 \\
---outdir='outdir' \\
 2>&1 > 'outdir/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 20' 'outdir' precision@192.168.0.101:'~/Production/'   &&   \\
 rm -r 'outdir'   &&   \\
@@ -136,20 +144,12 @@ rm './fastq/tumor_R2.fastq.gz'"""
             normal_fq2=None,
             local_fastq_dir='./fastq/',
             somatic_pipeline='somatic_pipeline-1.0.0',
+            outdir='outdir',
             ref_fa='./resource/GRCh38.primary_assembly.genome.fa',
-            read_aligner='bwa',
-            bqsr_known_variant_vcf='./resource/dbsnp.vcf.gz',
-            variant_callers='mutect2,muse,lofreq',
-            min_snv_callers=1,
-            min_indel_callers=1,
-            panel_of_normal_vcf='./resource/pon.vcf.gz',
-            call_region_bed='./resource/call-region.bed',
-            variant_removal_flags='clustered_events,panel_of_normals,Tier5',
-            vep_db_tar_gz='./resource/vep_cache',
-            vep_db_type='merged',
-            vep_buffer_size=5000,
-            threads=4,
-            outdir='outdir'
+            skip_mark_duplicates=True,
+            skip_variant_calling=True,
+            only_pass=True,
+            skip_variant_annotation=True,
         )
         self.assertEqual(expected, actual)
 
@@ -162,6 +162,6 @@ screen -S job_name -dm bash "outdir/commands.txt"
         actual = build_submit_cmd(
             job_name='job_name',
             outdir='outdir',
-            bash_script='BASH SCRIPT'
+            script='BASH SCRIPT'
         )
         self.assertEqual(expected, actual)
