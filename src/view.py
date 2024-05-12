@@ -1,10 +1,11 @@
 import os
 from typing import List, Tuple, Dict, Union
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, \
     QPushButton, QScrollArea, QCheckBox, QMessageBox, QFileDialog, QDialog, QFormLayout, \
     QLineEdit, QDialogButtonBox
-from .model import DEFAULT_KEY_VALUES
+from .model import DEFAULT_COMPUTE_PARAMETERS, DEFAULT_NAS_PARAMETERS, DEFAULT_PIPELINE_PARAMETERS
 
 
 BUTTON_NAME_TO_LABEL = {
@@ -46,18 +47,31 @@ class View(QWidget):
     def __init_label_combo_pairs(self):
         self.question_layout = QVBoxLayout()
         self.label_combo_pairs = []
-        for key, values in DEFAULT_KEY_VALUES.items():
-            label = QLabel(f'{key}:', self)
-            if type(values) is bool:
-                combo = QCheckBox(self)
-                combo.setChecked(values)
-            else:
-                combo = QComboBox(self)
-                combo.addItems([str(v) for v in values])
-                combo.setEditable(True)
-            self.label_combo_pairs.append((label, combo))
+
+        for title, default_parameters in [
+            ('COMPUTE', DEFAULT_COMPUTE_PARAMETERS),
+            ('NAS', DEFAULT_NAS_PARAMETERS),
+            ('PIPELINE', DEFAULT_PIPELINE_PARAMETERS),
+        ]:
+            if len(self.question_layout) > 0:
+                self.question_layout.addWidget(QLabel(' ', self))  # spacer
+
+            label = QLabel(title, self)
+            label.setAlignment(Qt.AlignCenter)
             self.question_layout.addWidget(label)
-            self.question_layout.addWidget(combo)
+
+            for key, values in default_parameters.items():
+                label = QLabel(f'{key}:', self)
+                if type(values) is bool:
+                    combo = QCheckBox(self)
+                    combo.setChecked(values)
+                else:
+                    combo = QComboBox(self)
+                    combo.addItems([str(v) for v in values])
+                    combo.setEditable(True)
+                self.label_combo_pairs.append((label, combo))
+                self.question_layout.addWidget(label)
+                self.question_layout.addWidget(combo)
 
     def __init_buttons(self):
         self.button_layout = QHBoxLayout()
@@ -91,7 +105,13 @@ class View(QWidget):
         self.password_dialog = PasswordDialog(self)
 
     def get_parameters(self) -> Dict[str, Union[str, bool]]:
-        keys = [k for k in DEFAULT_KEY_VALUES.keys()]
+        keys = []
+        for parameters in [
+            DEFAULT_COMPUTE_PARAMETERS,
+            DEFAULT_NAS_PARAMETERS,
+            DEFAULT_PIPELINE_PARAMETERS,
+        ]:
+            keys += list(parameters.keys())
         return self.__get_key_values(keys=keys)
 
     def __get_key_values(self, keys: List[str]) -> Dict[str, Union[str, bool]]:

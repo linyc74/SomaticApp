@@ -2,19 +2,21 @@ import pandas as pd
 from typing import Dict, Union, List, Optional
 
 
-DEFAULT_KEY_VALUES = {
+DEFAULT_COMPUTE_PARAMETERS = {
     'Compute User': [''],
     'Compute Public IP': ['255.255.255.255'],
     'Compute Port': ['22'],
     'Somatic Pipeline': ['somatic_pipeline-1.0.0'],
     'BED Directory': ['resource/bed'],
-
+}
+DEFAULT_NAS_PARAMETERS = {
     'NAS User': [''],
     'NAS Local IP': ['255.255.255.255'],
     'NAS Port': ['22'],
     'NAS Sequencing Directory': [''],
     'NAS Destination Directory': [''],
-
+}
+DEFAULT_PIPELINE_PARAMETERS = {
     'ref-fa': [''],
     'threads': [4],
     'umi-length': [0],
@@ -45,7 +47,7 @@ class BuildSubmissionCommands:
     LOCAL_FASTQ_DIR = './fastq'
 
     run_table: str
-    parameters: Dict[str, Union[str, int]]
+    parameters: Dict[str, Union[str, int, bool]]
 
     commands: List[str]
 
@@ -66,7 +68,10 @@ class BuildSubmissionCommands:
         return self.commands
 
     def load_default_parameters(self):
-        for key, values in DEFAULT_KEY_VALUES.items():
+        default = DEFAULT_COMPUTE_PARAMETERS.copy()
+        default.update(DEFAULT_NAS_PARAMETERS)
+        default.update(DEFAULT_PIPELINE_PARAMETERS)
+        for key, values in default.items():
             if key not in self.parameters:
                 if type(values) is bool:
                     self.parameters[key] = values
