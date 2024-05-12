@@ -88,8 +88,6 @@ class BuildExecutionScript:
     parameters: Dict[str, Union[str, int, bool]]
     sample_row: pd.Series
 
-    normal_fq1: Optional[str]
-    normal_fq2: Optional[str]
     stdout: str
     rsync_fastq_cmds: List[str]
     somatic_pipeline_cmd: str
@@ -105,7 +103,6 @@ class BuildExecutionScript:
         self.sample_row = sample_row
 
         self.load_default_parameters()
-        self.set_normal_fq1_fq2()
         self.set_stdout()
         self.set_rsync_fastq_cmds()
         self.set_somatic_pipeline_cmd()
@@ -120,21 +117,13 @@ class BuildExecutionScript:
         default = DEFAULT_COMPUTE_PARAMETERS.copy()
         default.update(DEFAULT_NAS_PARAMETERS)
         default.update(DEFAULT_PIPELINE_PARAMETERS)
+
         for key, values in default.items():
             if key not in self.parameters:
                 if type(values) is bool:
                     self.parameters[key] = values
                 else:  # list
                     self.parameters[key] = values[0]
-
-    def set_normal_fq1_fq2(self):
-        row = self.sample_row
-        self.normal_fq1 = row.get('Normal Fastq R1', pd.NA)
-        self.normal_fq2 = row.get('Normal Fastq R2', pd.NA)
-        if pd.isna(self.normal_fq1):
-            self.normal_fq1 = None
-        if pd.isna(self.normal_fq2):
-            self.normal_fq2 = None
 
     def set_stdout(self):
         outdir = self.sample_row['Output Name']
@@ -150,56 +139,52 @@ class BuildExecutionScript:
         srcdir = f"{p['NAS Sequencing Directory'].rstrip('/')}/{row['Sequencing Batch ID']}"
         tumor_fq1 = row['Tumor Fastq R1']
         tumor_fq2 = row['Tumor Fastq R2']
+        normal_fq1 = row.get('Normal Fastq R1', pd.NA)
+        normal_fq2 = row.get('Normal Fastq R2', pd.NA)
 
-        self.rsync_fastq_cmds = [
-            f"rsync -avz -e 'ssh -p {port}' {user}@{ip}:'{srcdir}/{tumor_fq1}' '{self.LOCAL_FASTQ_DIR}/' {self.stdout}",
-            f"rsync -avz -e 'ssh -p {port}' {user}@{ip}:'{srcdir}/{tumor_fq2}' '{self.LOCAL_FASTQ_DIR}/' {self.stdout}",
-        ]
+        fqs = [tumor_fq1, tumor_fq2]
+        if pd.notna(normal_fq1):
+            fqs += [normal_fq1, normal_fq2]
 
-        if self.normal_fq1 is not None:
-            self.rsync_fastq_cmds += [
-                f"rsync -avz -e 'ssh -p {port}' {user}@{ip}:'{srcdir}/{self.normal_fq1}' '{self.LOCAL_FASTQ_DIR}/' {self.stdout}",
-                f"rsync -avz -e 'ssh -p {port}' {user}@{ip}:'{srcdir}/{self.normal_fq2}' '{self.LOCAL_FASTQ_DIR}/' {self.stdout}",
-            ]
+        self.rsync_fastq_cmds = []
+        for fq in fqs:
+            self.rsync_fastq_cmds.append(
+                f"rsync -avz -e 'ssh -p {port}' {user}@{ip}:'{srcdir}/{fq}' '{self.LOCAL_FASTQ_DIR}/' {self.stdout}"
+            )
 
     def set_somatic_pipeline_cmd(self):
         p = self.parameters
         row = self.sample_row
 
-        n1 = 'None' if self.normal_fq1 is None else f'{self.LOCAL_FASTQ_DIR}/{self.normal_fq1}'
-        n2 = 'None' if self.normal_fq2 is None else f'{self.LOCAL_FASTQ_DIR}/{self.normal_fq2}'
+        lines = [
+            f"python {p['Somatic Pipeline']} main",
+            f"--tumor-fq1='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R1']}'",
+            f"--tumor-fq2='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R2']}'",
+            f"--call-region-bed='{p['BED Directory'].rstrip('/')}/{row['BED File']}'",
+            f"--outdir='{row['Output Name']}'",
+        ]
 
-        self.somatic_pipeline_cmd = f'''\
-python {p['Somatic Pipeline']} main \\
---ref-fa='{p['ref-fa']}' \\
---tumor-fq1='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R1']}' \\
---tumor-fq2='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R2']}' \\
---normal-fq1='{n1}' \\
---normal-fq2='{n2}' \\
---outdir='{row['Output Name']}' \\
---threads={p['threads']} \\
---umi-length={p['umi-length']} \\
---clip-r1-5-prime={p['clip-r1-5-prime']} \\
---clip-r2-5-prime={p['clip-r2-5-prime']} \\
---read-aligner='{p['read-aligner']}' \\
-{'--skip-mark-duplicates' if p['skip-mark-duplicates'] else ''} \\
---bqsr-known-variant-vcf='{p['bqsr-known-variant-vcf']}' \\
-{'--discard-bam' if p['discard-bam'] else ''} \\
---variant-callers='{p['variant-callers']}' \\
-{'--skip-variant-calling' if p['skip-variant-calling'] else ''} \\
---call-region-bed='{p['BED Directory'].rstrip('/')}/{row['BED File']}' \\
---panel-of-normal-vcf='{p['panel-of-normal-vcf']}' \\
---germline-resource-vcf='{p['germline-resource-vcf']}' \\
---variant-flagging-criteria='{p['variant-flagging-criteria']}' \\
---variant-removal-flags='{p['variant-removal-flags']}' \\
-{'--only-pass' if p['only-pass'] else ''} \\
---min-snv-callers={p['min-snv-callers']} \\
---min-indel-callers={p['min-indel-callers']} \\
-{'--skip-variant-annotation' if p['skip-variant-annotation'] else ''} \\
---vep-db-tar-gz='{p['vep-db-tar-gz']}' \\
---vep-db-type='{p['vep-db-type']}' \\
---vep-buffer-size={p['vep-buffer-size']} \\
-{self.stdout}'''
+        normal_fq1 = row.get('Normal Fastq R1', pd.NA)
+        normal_fq2 = row.get('Normal Fastq R2', pd.NA)
+        if pd.notna(normal_fq1):
+            lines.append(f"--normal-fq1='{self.LOCAL_FASTQ_DIR}/{normal_fq1}'")
+            lines.append(f"--normal-fq2='{self.LOCAL_FASTQ_DIR}/{normal_fq2}'")
+
+        for key in DEFAULT_PIPELINE_PARAMETERS.keys():
+            if key not in p:
+                continue
+            val = p[key]
+            if type(val) is bool:
+                if val:
+                    lines.append(f"--{key}")
+            elif type(val) is int:
+                lines.append(f"--{key}={val}")
+            else:  # str
+                lines.append(f"--{key}='{val}'")
+
+        lines.append(self.stdout)
+
+        self.somatic_pipeline_cmd = ' \\\n'.join(lines)
 
     def set_rsync_output_cmd(self):
         p = self.parameters
@@ -210,22 +195,24 @@ python {p['Somatic Pipeline']} main \\
         ip = p['NAS Local IP']
         port = p['NAS Port']
         dstdir = p['NAS Destination Directory'].rstrip('/')
-        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{dstdir}/'"
+        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{dstdir}/' {self.stdout}"
 
     def set_rm_cmds(self):
         row = self.sample_row
 
-        self.rm_cmds = [
-            f"rm -r '{row['Output Name']}'",
-            f"rm '{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R1']}'",
-            f"rm '{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R2']}'",
-        ]
+        self.rm_cmds = [f"rm -r '{row['Output Name']}'"]
 
-        if self.normal_fq1 is not None:
-            self.rm_cmds += [
-                f"rm '{self.LOCAL_FASTQ_DIR}/{self.normal_fq1}'",
-                f"rm '{self.LOCAL_FASTQ_DIR}/{self.normal_fq2}'",
-            ]
+        tumor_fq1 = row['Tumor Fastq R1']
+        tumor_fq2 = row['Tumor Fastq R2']
+        normal_fq1 = row.get('Normal Fastq R1', pd.NA)
+        normal_fq2 = row.get('Normal Fastq R2', pd.NA)
+
+        fqs = [tumor_fq1, tumor_fq2]
+        if pd.notna(normal_fq1):
+            fqs += [normal_fq1, normal_fq2]
+
+        for fq in fqs:
+            self.rm_cmds.append(f"rm '{self.LOCAL_FASTQ_DIR}/{fq}'")
 
 
 def build_submit_cmd(
