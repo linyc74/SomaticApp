@@ -2,6 +2,8 @@ import pandas as pd
 from typing import Dict, Union, List
 
 
+COMPUTE_ROOT_DIR = '~/SomaticApp'
+COMPUTE_BASH_PROFILE = '~/SomaticApp/.bash_profile'
 NAS_ROOT_DIR = '~/SomaticApp'
 DEFAULT_COMPUTE_PARAMETERS = {
     'Compute User': [''],

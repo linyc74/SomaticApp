@@ -2,7 +2,7 @@ from typing import List
 from fabric import Connection
 from .io import IO
 from .view import View
-from .model import BuildSubmissionCommands
+from .model import BuildSubmissionCommands, COMPUTE_ROOT_DIR, COMPUTE_BASH_PROFILE
 
 
 class Controller:
@@ -69,9 +69,6 @@ class ActionSaveParameters(Action):
 
 class ActionSubmitJobs(Action):
 
-    ROOT_DIR = '~/SomaticApp'
-    BASH_PROFILE = '~/SomaticApp/.bash_profile'
-
     run_table: str
     ssh_password: str
 
@@ -125,6 +122,6 @@ class ActionSubmitJobs(Action):
         )
 
     def submit_one(self, command: str):
-        with self.connection.cd(self.ROOT_DIR):
-            with self.connection.prefix(f'source {self.BASH_PROFILE}'):
+        with self.connection.cd(COMPUTE_ROOT_DIR):
+            with self.connection.prefix(f'source {COMPUTE_BASH_PROFILE}'):
                 self.connection.run(command, echo=True)  # echo=True for printing out the command
