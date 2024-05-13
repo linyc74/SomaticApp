@@ -37,7 +37,8 @@ class TestBuildExecutionScript(TestCase):
     def test_tn_paired(self):
         parameters = {
             'NAS User': 'me',
-            'umi-length': 7,
+            'NAS Destination Directory': 'test',
+            'umi-length': '7',
             'skip-mark-duplicates': True,
             'bqsr-known-variant-vcf': 'BQSR_KNOWN_VARIANT_VCF',
         }
@@ -84,7 +85,7 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/test/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
 rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
 rm './fastq/TUMOR_R2.fastq.gz'   &&   \\
@@ -137,7 +138,7 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
-rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'/' 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
+rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
 rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
 rm './fastq/TUMOR_R2.fastq.gz'"""

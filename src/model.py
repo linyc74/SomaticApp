@@ -1,7 +1,8 @@
 import pandas as pd
-from typing import Dict, Union, List, Optional
+from typing import Dict, Union, List
 
 
+NAS_ROOT_DIR = '~/SomaticApp'
 DEFAULT_COMPUTE_PARAMETERS = {
     'Compute User': [''],
     'Compute Public IP': ['255.255.255.255'],
@@ -171,20 +172,30 @@ class BuildExecutionScript:
             lines.append(f"--normal-fq2='{self.LOCAL_FASTQ_DIR}/{normal_fq2}'")
 
         for key in DEFAULT_PIPELINE_PARAMETERS.keys():
+
             if key not in p:
                 continue
-            val = p[key]
-            if type(val) is bool:
-                if val:
+
+            dtype = self.__get_type(key)
+
+            if dtype is bool:
+                if p[key]:
                     lines.append(f"--{key}")
-            elif type(val) is int:
-                lines.append(f"--{key}={val}")
+            elif dtype is int:
+                lines.append(f"--{key}={p[key]}")
             else:  # str
-                lines.append(f"--{key}='{val}'")
+                lines.append(f"--{key}='{p[key]}'")
 
         lines.append(self.stdout)
 
         self.somatic_pipeline_cmd = ' \\\n'.join(lines)
+
+    def __get_type(self, key: str) -> type:
+        # type determined by default value, not by input value, which is always str
+        values = DEFAULT_PIPELINE_PARAMETERS.get(key)
+        if type(values) is bool:
+            return bool
+        return type(values[0])
 
     def set_rsync_output_cmd(self):
         p = self.parameters
@@ -194,8 +205,12 @@ class BuildExecutionScript:
         user = p['NAS User']
         ip = p['NAS Local IP']
         port = p['NAS Port']
-        dstdir = p['NAS Destination Directory'].rstrip('/')
-        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{dstdir}/' {self.stdout}"
+        dstdir = p['NAS Destination Directory'].lstrip('.').lstrip('/').rstrip('/')  # remove leading './' and trailing '/'
+
+        if dstdir != '':
+            dstdir += '/'
+
+        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{NAS_ROOT_DIR}/{dstdir}'"
 
     def set_rm_cmds(self):
         row = self.sample_row
