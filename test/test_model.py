@@ -1,6 +1,6 @@
 import pandas as pd
-from setup import TestCase
-from src.model import BuildSubmissionCommands, BuildExecutionScript, build_submit_cmd
+from src.model import BuildSubmissionCommands, BuildExecutionScript, build_submit_cmd, is_subdir
+from .setup import TestCase
 
 
 class TestBuildSubmissionCommands(TestCase):
@@ -144,10 +144,34 @@ rm './fastq/TUMOR_R1.fastq.gz'   &&   \\
 rm './fastq/TUMOR_R2.fastq.gz'"""
         self.assertEqual(expected, actual)
 
+    def test_raise_dstdir_error(self):
+        # multiple '../' buried in the path is dangerous, causing writing to super directories or even root
+        parameters = {
+            'NAS Destination Directory': 'A/B/../.././../../',
+        }
+        sample_row = pd.Series({
+            'Sequencing Batch ID': 'SEQUENCING_BATCH_ID',
+            'Tumor Fastq R1': 'TUMOR_R1.fastq.gz',
+            'Tumor Fastq R2': 'TUMOR_R2.fastq.gz',
+            'Normal Fastq R1': pd.NA,
+            'Normal Fastq R2': pd.NA,
+            'Output Name': 'OUTPUT_NAME',
+            'BED File': 'BED_FILE.bed',
+        })
+        with self.assertRaises(ValueError):
+            BuildExecutionScript().main(parameters=parameters, sample_row=sample_row)
 
-class TestBuildSubmitCmd(TestCase):
 
-    def test_main(self):
+class TestFunctions(TestCase):
+
+    def test_is_subdir(self):
+        self.assertTrue(is_subdir(parent='~/A', child='~/A'))  # same directory is considered subdir
+        self.assertTrue(is_subdir(parent='~/A', child='~/A/B'))
+        self.assertTrue(is_subdir(parent='~/A', child='~/A/../A'))  # same directory is considered subdir
+        self.assertFalse(is_subdir(parent='~/A', child='~/A/../'))
+        self.assertFalse(is_subdir(parent='~/A', child='~/A/../B'))
+
+    def test_build_submit_cmd(self):
         actual = build_submit_cmd(
             job_name='job_name',
             outdir='outdir',

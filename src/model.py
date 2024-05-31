@@ -1,4 +1,5 @@
 import pandas as pd
+from os.path import abspath, expanduser
 from typing import Dict, Union, List
 
 
@@ -212,6 +213,9 @@ class BuildExecutionScript:
         if dstdir != '':
             dstdir += '/'
 
+        if not is_subdir(parent=NAS_ROOT_DIR, child=f'{NAS_ROOT_DIR}/{dstdir}'):
+            raise ValueError(f"Destination directory '{NAS_ROOT_DIR}/{dstdir}' is not a subdirectory of NAS root directory '{NAS_ROOT_DIR}'")
+
         self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{NAS_ROOT_DIR}/{dstdir}'"
 
     def set_rm_cmds(self):
@@ -230,6 +234,12 @@ class BuildExecutionScript:
 
         for fq in fqs:
             self.rm_cmds.append(f"rm '{self.LOCAL_FASTQ_DIR}/{fq}'")
+
+
+def is_subdir(parent: str, child: str) -> bool:
+    p = abspath(expanduser(parent))
+    c = abspath(expanduser(child))
+    return c.startswith(p)
 
 
 def build_submit_cmd(
