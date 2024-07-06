@@ -1,5 +1,5 @@
 from os.path import dirname
-from typing import List, Tuple, Dict, Union
+from typing import List, Dict, Union
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, \
@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
 from .model import DEFAULT_COMPUTE_PARAMETERS, DEFAULT_NAS_PARAMETERS, DEFAULT_PIPELINE_PARAMETERS
 
 
+COMPUTE_TITLE = 'COMPUTE'
+NAS_TITLE = 'NAS'
+PIPELINE_TITLE = 'PIPELINE'
 BUTTON_KEY_TO_LABEL = {
     'load_parameters': 'Load Parameters',
     'save_parameters': 'Save Parameters',
@@ -70,13 +73,14 @@ class View(QWidget):
     def __init_title_to_edits(self):
         self.title_to_edits = {}
         for title, default_parameters in [
-            ('COMPUTE', DEFAULT_COMPUTE_PARAMETERS),
-            ('NAS', DEFAULT_NAS_PARAMETERS),
-            ('PIPELINE', DEFAULT_PIPELINE_PARAMETERS),
+            (COMPUTE_TITLE, DEFAULT_COMPUTE_PARAMETERS),
+            (NAS_TITLE, DEFAULT_NAS_PARAMETERS),
+            (PIPELINE_TITLE, DEFAULT_PIPELINE_PARAMETERS),
         ]:
             edits = []
             for key, values in default_parameters.items():
                 qlabel = QLabel(f'{key}:', self)
+
                 if type(values) is bool:
                     qedit = QCheckBox(self)
                     qedit.setChecked(values)
@@ -84,6 +88,7 @@ class View(QWidget):
                     qedit = QComboBox(self)
                     qedit.addItems([str(v) for v in values])
                     qedit.setEditable(True)
+
                 edit = Edit(key=key, qlabel=qlabel, qedit=qedit)
                 edits.append(edit)
             self.title_to_edits[title] = edits
