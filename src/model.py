@@ -118,16 +118,17 @@ class BuildExecutionScript:
         return '   &&   \\\n'.join(cmds)
 
     def load_default_parameters(self):
-        default = DEFAULT_COMPUTE_PARAMETERS.copy()
-        default.update(DEFAULT_NAS_PARAMETERS)
-        default.update(DEFAULT_PIPELINE_PARAMETERS)
-
-        for key, values in default.items():
-            if key not in self.parameters:
-                if type(values) is bool:
-                    self.parameters[key] = values
-                else:  # list
-                    self.parameters[key] = values[0]
+        for default in [
+            DEFAULT_COMPUTE_PARAMETERS,
+            DEFAULT_NAS_PARAMETERS,
+            DEFAULT_PIPELINE_PARAMETERS
+        ]:
+            for key, values in default.items():
+                if key not in self.parameters:
+                    if type(values) is bool:
+                        self.parameters[key] = values
+                    else:  # list
+                        self.parameters[key] = values[0]
 
     def set_stdout(self):
         outdir = self.sample_row['Output Name']
