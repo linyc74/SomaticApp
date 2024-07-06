@@ -1,4 +1,4 @@
-import os
+from os.path import dirname
 from typing import List, Tuple, Dict, Union
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -18,7 +18,7 @@ BUTTON_NAME_TO_LABEL = {
 class View(QWidget):
 
     TITLE = 'Somatic App'
-    ICON_PNG = f'{os.getcwd()}/icon/logo.ico'
+    ICON_PNG = 'icon/logo.ico'
     WIDTH, HEIGHT = 800, 1000
 
     question_layout: QVBoxLayout
@@ -35,7 +35,7 @@ class View(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(self.TITLE)
-        self.setWindowIcon(QIcon(self.ICON_PNG))
+        self.setWindowIcon(QIcon(f'{dirname(dirname(__file__))}/{self.ICON_PNG}'))
         self.resize(self.WIDTH, self.HEIGHT)
 
         self.__init_label_combo_pairs()
