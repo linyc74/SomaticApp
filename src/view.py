@@ -8,11 +8,33 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox
 from .model import DEFAULT_COMPUTE_PARAMETERS, DEFAULT_NAS_PARAMETERS, DEFAULT_PIPELINE_PARAMETERS
 
 
-BUTTON_NAME_TO_LABEL = {
+BUTTON_KEY_TO_LABEL = {
     'load_parameters': 'Load Parameters',
     'save_parameters': 'Save Parameters',
     'submit_jobs': 'Submit Jobs',
 }
+
+
+class Edit:
+
+    key: str
+    qlabel: QLabel
+    qedit: Union[QComboBox, QCheckBox]
+
+    def __init__(self, key: str, qlabel: QLabel, qedit: Union[QComboBox, QCheckBox]):
+        self.key = key
+        self.qlabel = qlabel
+        self.qedit = qedit
+
+
+class Button:
+
+    key: str
+    qbutton: QPushButton
+
+    def __init__(self, key: str, qbutton: QPushButton):
+        self.key = key
+        self.qbutton = qbutton
 
 
 class View(QWidget):
@@ -21,15 +43,13 @@ class View(QWidget):
     ICON_PNG = 'icon/logo.ico'
     WIDTH, HEIGHT = 800, 1000
 
+    title_to_edits: Dict[str, List[Edit]]
+    buttons: List[Button]
+
     question_layout: QVBoxLayout
-    label_combo_pairs: List[Tuple[QLabel, QComboBox]]
-
     button_layout: QHBoxLayout
-    buttons: Dict[str, QPushButton]
-
     scroll_area: QScrollArea
     scroll_contents: QWidget
-
     main_layout: QVBoxLayout
 
     def __init__(self):
@@ -38,21 +58,47 @@ class View(QWidget):
         self.setWindowIcon(QIcon(f'{dirname(dirname(__file__))}/{self.ICON_PNG}'))
         self.resize(self.WIDTH, self.HEIGHT)
 
-        self.__init_label_combo_pairs()
+        self.__init_title_to_edits()
         self.__init_buttons()
+
+        self.__init_question_layout()
+        self.__init_button_layout()
         self.__init_scroll_area_and_contents()
         self.__init_main_layout()
         self.__init_methods()
 
-    def __init_label_combo_pairs(self):
-        self.question_layout = QVBoxLayout()
-        self.label_combo_pairs = []
-
+    def __init_title_to_edits(self):
+        self.title_to_edits = {}
         for title, default_parameters in [
             ('COMPUTE', DEFAULT_COMPUTE_PARAMETERS),
             ('NAS', DEFAULT_NAS_PARAMETERS),
             ('PIPELINE', DEFAULT_PIPELINE_PARAMETERS),
         ]:
+            edits = []
+            for key, values in default_parameters.items():
+                qlabel = QLabel(f'{key}:', self)
+                if type(values) is bool:
+                    qedit = QCheckBox(self)
+                    qedit.setChecked(values)
+                else:
+                    qedit = QComboBox(self)
+                    qedit.addItems([str(v) for v in values])
+                    qedit.setEditable(True)
+                edit = Edit(key=key, qlabel=qlabel, qedit=qedit)
+                edits.append(edit)
+            self.title_to_edits[title] = edits
+
+    def __init_buttons(self):
+        self.buttons = []
+        for key, label in BUTTON_KEY_TO_LABEL.items():
+            qbutton = QPushButton(label, self)
+            button = Button(key=key, qbutton=qbutton)
+            self.buttons.append(button)
+
+    def __init_question_layout(self):
+        self.question_layout = QVBoxLayout()
+
+        for title, edits in self.title_to_edits.items():
             if len(self.question_layout) > 0:
                 self.question_layout.addWidget(QLabel(' ', self))  # spacer
 
@@ -60,29 +106,16 @@ class View(QWidget):
             label.setAlignment(Qt.AlignCenter)
             self.question_layout.addWidget(label)
 
-            for key, values in default_parameters.items():
-                label = QLabel(f'{key}:', self)
-                if type(values) is bool:
-                    combo = QCheckBox(self)
-                    combo.setChecked(values)
-                else:
-                    combo = QComboBox(self)
-                    combo.addItems([str(v) for v in values])
-                    combo.setEditable(True)
-                self.label_combo_pairs.append((label, combo))
-                self.question_layout.addWidget(label)
-                self.question_layout.addWidget(combo)
+            for edit in edits:
+                self.question_layout.addWidget(edit.qlabel)
+                self.question_layout.addWidget(edit.qedit)
 
-    def __init_buttons(self):
+    def __init_button_layout(self):
         self.button_layout = QHBoxLayout()
         self.button_layout.addStretch(1)
         self.question_layout.addLayout(self.button_layout)
-
-        self.buttons = dict()
-        for name, label in BUTTON_NAME_TO_LABEL.items():
-            button = QPushButton(label, self)
-            self.button_layout.addWidget(button)
-            self.buttons[name] = button
+        for button in self.buttons:
+            self.button_layout.addWidget(button.qbutton)
 
     def __init_scroll_area_and_contents(self):
         self.scroll_area = QScrollArea(self)
@@ -105,41 +138,39 @@ class View(QWidget):
         self.password_dialog = PasswordDialog(self)
 
     def get_parameters(self) -> Dict[str, Union[str, bool]]:
-        keys = []
-        for parameters in [
-            DEFAULT_COMPUTE_PARAMETERS,
-            DEFAULT_NAS_PARAMETERS,
-            DEFAULT_PIPELINE_PARAMETERS,
-        ]:
-            keys += list(parameters.keys())
-        return self.__get_key_values(keys=keys)
-
-    def __get_key_values(self, keys: List[str]) -> Dict[str, Union[str, bool]]:
         ret = {}
-        for label, item in self.label_combo_pairs:
-            k = label.text()[:-1]
-            if k not in keys:
-                continue
-            if type(item) is QComboBox:
-                ret[k] = item.currentText()
-            elif type(item) is QCheckBox:
-                ret[k] = item.isChecked()
+        for edits in self.title_to_edits.values():
+            for edit in edits:
+                q = edit.qedit
+                if type(q) is QComboBox:
+                    val = q.currentText()
+                else:  # QCheckBox
+                    val = q.isChecked()
+                ret[edit.key] = val
+
         return ret
 
     def set_parameters(self, parameters: Dict[str, Union[str, bool]]):
         # Reset flags to False because
         #   when a flag is not present in parameters, it should be False
-        for _, combo in self.label_combo_pairs:
-            if type(combo) is QCheckBox:
-                combo.setChecked(False)
+        for edits in self.title_to_edits.values():
+            for edit in edits:
+                q = edit.qedit
+                if type(q) is QCheckBox:
+                    q.setChecked(False)
 
-        for key, val in parameters.items():
-            for label, combo in self.label_combo_pairs:
-                if label.text()[:-1] == key:
-                    if type(combo) is QComboBox:
-                        combo.setCurrentText(val)
-                    elif type(combo) is QCheckBox:
-                        combo.setChecked(True)  # when the key if present, the flag should be True
+        for edits in self.title_to_edits.values():
+            for edit in edits:
+                q = edit.qedit
+
+                val = parameters.get(edit.key, None)
+                if val is None:
+                    continue
+
+                if type(q) is QComboBox:
+                    q.setCurrentText(val)
+                elif type(q) is QCheckBox:
+                    q.setChecked(True)  # when the key if present, the flag should be True
 
 
 class MessageBox:

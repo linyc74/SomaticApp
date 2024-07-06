@@ -13,20 +13,23 @@ class Controller:
     def __init__(self, io: IO, view: View):
         self.io = io
         self.view = view
-        self.__init_actions()
         self.__connect_buttons_to_actions()
         self.view.show()
 
-    def __init_actions(self):
-        self.action_load_parameters = ActionLoadParameters(self)
-        self.action_save_parameters = ActionSaveParameters(self)
-        self.action_submit_jobs = ActionSubmitJobs(self)
-
     def __connect_buttons_to_actions(self):
-        for name, button in self.view.buttons.items():
-            action_method = getattr(self, f'action_{name}', None)
+        for button in self.view.buttons:
+            action_method = getattr(self, f'action_{button.key}', None)
             if action_method is not None:
-                button.clicked.connect(action_method)
+                button.qbutton.clicked.connect(action_method)
+
+    def action_load_parameters(self):
+        ActionLoadParameters(self).exec()
+
+    def action_save_parameters(self):
+        ActionSaveParameters(self).exec()
+
+    def action_submit_jobs(self):
+        ActionSubmitJobs(self).exec()
 
 
 class Action:
@@ -41,7 +44,7 @@ class Action:
 
 class ActionLoadParameters(Action):
 
-    def __call__(self):
+    def exec(self):
         file = self.view.file_dialog_open()
         if file == '':
             return
@@ -55,7 +58,7 @@ class ActionLoadParameters(Action):
 
 class ActionSaveParameters(Action):
 
-    def __call__(self):
+    def exec(self):
         file = self.view.file_dialog_save()
         if file == '':
             return
@@ -76,7 +79,7 @@ class ActionSubmitJobs(Action):
     env_cmd: str
     submission_commands: List[str]
 
-    def __call__(self):
+    def exec(self):
 
         self.run_table = self.view.file_dialog_open()
         if self.run_table == '':
