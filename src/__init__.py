@@ -5,7 +5,7 @@ from .io import IO
 from .controller import Controller
 
 
-VERSION = 'v1.0.0-alpha'
+VERSION = 'v1.0.0-beta.1'
 STARTING_MESSAGE = f'''\
 Somatic App {VERSION}
 College of Dentistry, National Yang Ming Chiao Tung University (NYCU), Taiwan
