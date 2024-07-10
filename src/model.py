@@ -5,7 +5,7 @@ from typing import Dict, Union, List
 
 COMPUTE_ROOT_DIR = '~/SomaticApp'
 COMPUTE_BASH_PROFILE = '~/SomaticApp/.bash_profile'
-NAS_ROOT_DIR = '~/SomaticApp'
+NAS_OUTPUT_ROOT_DIR = '~/SomaticApp'
 DEFAULT_COMPUTE_PARAMETERS = {
     'Compute User': [''],
     'Compute Public IP': ['255.255.255.255'],
@@ -214,10 +214,10 @@ class BuildExecutionScript:
         if dstdir != '':
             dstdir += '/'
 
-        if not is_subdir(parent=NAS_ROOT_DIR, child=f'{NAS_ROOT_DIR}/{dstdir}'):
-            raise ValueError(f"Destination directory '{NAS_ROOT_DIR}/{dstdir}' is not a subdirectory of NAS root directory '{NAS_ROOT_DIR}'")
+        if not is_subdir(parent=NAS_OUTPUT_ROOT_DIR, child=f'{NAS_OUTPUT_ROOT_DIR}/{dstdir}'):
+            raise ValueError(f"Destination directory '{NAS_OUTPUT_ROOT_DIR}/{dstdir}' is not a subdirectory of NAS root directory '{NAS_OUTPUT_ROOT_DIR}'")
 
-        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{NAS_ROOT_DIR}/{dstdir}'"
+        self.rsync_output_cmd = f"rsync -avz -e 'ssh -p {port}' '{outdir}' {user}@{ip}:'{NAS_OUTPUT_ROOT_DIR}/{dstdir}'"
 
     def set_rm_cmds(self):
         row = self.sample_row
