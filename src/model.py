@@ -165,14 +165,19 @@ class BuildExecutionScript:
             f"python {p['Somatic Pipeline']} main",
             f"--tumor-fq1='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R1']}'",
             f"--tumor-fq2='{self.LOCAL_FASTQ_DIR}/{row['Tumor Fastq R2']}'",
-            f"--call-region-bed='{p['BED Directory'].rstrip('/')}/{row['BED File']}'",
             f"--outdir='{row['Output Name']}'",
         ]
 
+        bed = row.get('BED File', pd.NA)
+        if pd.notna(bed):
+            lines.append(f"--call-region-bed='{p['BED Directory'].rstrip('/')}/{bed}'")
+
         normal_fq1 = row.get('Normal Fastq R1', pd.NA)
-        normal_fq2 = row.get('Normal Fastq R2', pd.NA)
         if pd.notna(normal_fq1):
             lines.append(f"--normal-fq1='{self.LOCAL_FASTQ_DIR}/{normal_fq1}'")
+
+        normal_fq2 = row.get('Normal Fastq R2', pd.NA)
+        if pd.notna(normal_fq2):
             lines.append(f"--normal-fq2='{self.LOCAL_FASTQ_DIR}/{normal_fq2}'")
 
         for key in DEFAULT_PIPELINE_PARAMETERS.keys():
