@@ -94,7 +94,7 @@ setup(
     options={{
         'py2app': {{
             'iconfile': './icon/logo.ico',
-            'packages': ['cffi', 'openpyxl', 'pandas', 'PyQt5']
+            'packages': ['cffi', 'pandas', 'PyQt5']
         }}
     }},
     setup_requires=['py2app'],
@@ -108,6 +108,8 @@ setup(
         shutil.copy('./lib/libffi.8.dylib', f'./dist/{f}.app/Contents/Frameworks/')
 
         os.rename(f'./dist/{f}.app', f'./{f}.app')
+
+        subprocess.check_call(f'zip -r {f}.zip {f}.app', shell=True)
 
         for dir_ in ['build', 'dist']:
             shutil.rmtree(dir_)
