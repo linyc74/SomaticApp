@@ -47,6 +47,12 @@ DEFAULT_PIPELINE_PARAMETERS = {
     'vep-db-tar-gz': ['None'],
     'vep-db-type': ['merged'],
     'vep-buffer-size': [5000],
+    'skip-pcgr': False,
+    'pcgr-ref-data-tgz': ['None'],
+    'pcgr-vep-tar-gz': ['None'],
+    'pcgr-tumor-site': [12],
+    'pcgr-tmb-target-size-mb': [34],
+    'pcgr-tmb-display': ['coding_and_silent', 'coding_non_silent', 'missense_only'],
 }
 
 
