@@ -13,7 +13,7 @@ Yu-Cheng Lin, DDS, MS, PhD (ylin@nycu.edu.tw)
 '''
 
 
-class EntryPoint:
+class Main:
 
     APP_ID = f'NYCU.Dentistry.SomaticApp.{VERSION}'
 

@@ -30,7 +30,7 @@ class EntryPoint:
         self.set_parser()
         self.add_required_arguments()
         self.add_optional_arguments()
-        self.run()
+        BuildApp().main()
 
     def set_parser(self):
         self.parser = argparse.ArgumentParser(
@@ -48,10 +48,6 @@ class EntryPoint:
         group = self.parser.add_argument_group('optional arguments')
         for item in OPTIONAL:
             group.add_argument(*item['keys'], **item['properties'])
-
-    def run(self):
-        args = self.parser.parse_args()
-        BuildApp().main()
 
 
 class BuildApp:
@@ -78,11 +74,11 @@ class BuildApp:
 
         with open(self.entrypoint_py, 'w') as f:
             f.write(f'''\
-from src import EntryPoint
+from src import Main
 
 
 if __name__ == '__main__':
-    EntryPoint().main()
+    Main().main()
 ''')
 
     def write_setup_py(self):
