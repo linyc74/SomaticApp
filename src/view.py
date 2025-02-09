@@ -178,6 +178,9 @@ class View(QWidget):
                     q.setChecked(True)  # when the key if present, the flag should be True
 
 
+#
+
+
 class MessageBox:
 
     TITLE: str
@@ -222,6 +225,9 @@ class MessageBoxYesNo(MessageBox):
         return self.box.exec_() == QMessageBox.Yes
 
 
+#
+
+
 class FileDialog:
 
     parent: QWidget
@@ -256,21 +262,21 @@ class FileDialogSave(FileDialog):
         d.selectNameFilter('CSV files (*.csv)')
         d.setOptions(QFileDialog.DontUseNativeDialog)
         d.setAcceptMode(QFileDialog.AcceptSave)
-        d.exec_()
 
-        files = d.selectedFiles()
-
-        name_filter = d.selectedNameFilter()
-        ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'CSV files (*.csv)' -> '.csv'
-
-        if len(files) == 0:
-            ret = ''
-        else:
-            ret = files[0]
-            if not ret.endswith(ext):  # add file extension if not present
-                ret += ext
-
+        ret = ''  # default, no file object selected and accepted
+        accepted = d.exec_()
+        if accepted:
+            files = d.selectedFiles()
+            name_filter = d.selectedNameFilter()
+            ext = name_filter.split('(*')[-1].split(')')[0]  # e.g. 'CSV files (*.csv)' -> '.csv'
+            if len(files) > 0:
+                ret = files[0]
+                if not ret.endswith(ext):  # add file extension if not present
+                    ret += ext
         return ret
+
+
+#
 
 
 class PasswordDialog:
