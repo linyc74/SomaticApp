@@ -53,6 +53,10 @@ DEFAULT_PIPELINE_PARAMETERS = {
     'pcgr-tumor-site': [12],
     'pcgr-tmb-target-size-mb': [34],
     'pcgr-tmb-display': ['coding_and_silent', 'coding_non_silent', 'missense_only'],
+    'skip-msi': False,
+    'skip-cnv': False,
+    'ucsc-ref-flat-txt': ['None'],
+    'segmentation-threshold': [0.0001],
 }
 
 
@@ -196,7 +200,7 @@ class BuildExecutionScript:
             if dtype is bool:
                 if p[key]:
                     lines.append(f"--{key}")
-            elif dtype is int:
+            elif dtype is int or dtype is float:
                 lines.append(f"--{key}={p[key]}")
             else:  # str
                 lines.append(f"--{key}='{p[key]}'")

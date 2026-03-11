@@ -89,6 +89,8 @@ python somatic_pipeline-1.0.0 main \\
 --pcgr-tumor-site=12 \\
 --pcgr-tmb-target-size-mb=34 \\
 --pcgr-tmb-display='coding_and_silent' \\
+--ucsc-ref-flat-txt='None' \\
+--segmentation-threshold=0.0001 \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/test/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
@@ -147,6 +149,8 @@ python somatic_pipeline-1.0.0 main \\
 --pcgr-tumor-site=12 \\
 --pcgr-tmb-target-size-mb=34 \\
 --pcgr-tmb-display='coding_and_silent' \\
+--ucsc-ref-flat-txt='None' \\
+--segmentation-threshold=0.0001 \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
@@ -202,6 +206,8 @@ python somatic_pipeline-1.0.0 main \\
 --pcgr-tumor-site=12 \\
 --pcgr-tmb-target-size-mb=34 \\
 --pcgr-tmb-display='coding_and_silent' \\
+--ucsc-ref-flat-txt='None' \\
+--segmentation-threshold=0.0001 \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
