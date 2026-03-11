@@ -84,6 +84,11 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
+--pcgr-ref-data-tgz='None' \\
+--pcgr-vep-tar-gz='None' \\
+--pcgr-tumor-site=12 \\
+--pcgr-tmb-target-size-mb=34 \\
+--pcgr-tmb-display='coding_and_silent' \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/test/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
@@ -137,6 +142,11 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
+--pcgr-ref-data-tgz='None' \\
+--pcgr-vep-tar-gz='None' \\
+--pcgr-tumor-site=12 \\
+--pcgr-tmb-target-size-mb=34 \\
+--pcgr-tmb-display='coding_and_silent' \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
@@ -187,6 +197,11 @@ python somatic_pipeline-1.0.0 main \\
 --vep-db-tar-gz='None' \\
 --vep-db-type='merged' \\
 --vep-buffer-size=5000 \\
+--pcgr-ref-data-tgz='None' \\
+--pcgr-vep-tar-gz='None' \\
+--pcgr-tumor-site=12 \\
+--pcgr-tmb-target-size-mb=34 \\
+--pcgr-tmb-display='coding_and_silent' \\
 2>&1 >> 'OUTPUT_NAME/progress.txt'   &&   \\
 rsync -avz -e 'ssh -p 22' 'OUTPUT_NAME' me@255.255.255.255:'~/SomaticApp/'   &&   \\
 rm -r 'OUTPUT_NAME'   &&   \\
