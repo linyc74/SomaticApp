@@ -9,19 +9,22 @@ A typical directory structure is shown below:
 
 ```
 ~/SomaticApp/
-├── .bash_profile
+├── .profile
 ├── fastq/
 ├── resource/
 └── somatic_pipeline-1.0.0/
 ```
 
-The `.bash_profile` defines all things needed to be activated to run the `somatic_pipeline-1.0.0`.
-An example of the `.bash_profile` is shown below:
+The `.profile` defines all things needed to be activated to run the `somatic_pipeline-1.0.0`.
+An example of the `.profile` is shown below:
 
 ```bash
-source $HOME/anaconda3/bin/activate somatic
-export PATH=$PATH:$HOME/opt/ensembl-vep-release-106
+source $HOME/anaconda3/bin/activate pcgr
+export PATH=$PATH:$HOME/opt
+export PATH=$PATH:$HOME/opt/TrimGalore-0.6.10
 export PATH=$PATH:$HOME/opt/VarDict-1.8.3/bin
+export PATH=$PATH:$HOME/opt/bcftools-1.23
+export PATH=$PATH:$HOME/opt/MANTIS
 ```
 
 Other files/directories are described as follows:
