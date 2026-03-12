@@ -22,7 +22,7 @@ class IO:
                 line = line_.strip()
                 if sep not in line:  # flag without value
                     line += sep
-                key, val = line.split(sep)
+                key, val = line.split(sep)[0:2]  # first two elements: key and value
                 val = val.strip()
                 if val == '':  # flag without value
                     val = True
@@ -38,9 +38,11 @@ class IO:
             reader = csv.reader(fh)
             for row in reader:
                 if len(row) == 1:
-                    key, val = row[0], True
+                    key, val = row[0], True # flag without value
                 else:
                     key, val = row[0:2]
+                    if val == '':  # flag without value
+                        val = True
                 ret[key] = val
         return ret
 
