@@ -4,7 +4,7 @@ from typing import Dict, Union, List
 
 
 COMPUTE_ROOT_DIR = '~/SomaticApp'
-COMPUTE_BASH_PROFILE = '~/SomaticApp/.bash_profile'
+COMPUTE_PROFILE = '~/SomaticApp/.profile'
 NAS_OUTPUT_ROOT_DIR = '~/SomaticApp'
 DEFAULT_COMPUTE_PARAMETERS = {
     'Compute User': [''],

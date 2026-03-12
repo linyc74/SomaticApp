@@ -2,7 +2,7 @@ from typing import List
 from fabric import Connection
 from .io import IO
 from .view import View
-from .model import BuildSubmissionCommands, COMPUTE_ROOT_DIR, COMPUTE_BASH_PROFILE
+from .model import BuildSubmissionCommands, COMPUTE_ROOT_DIR, COMPUTE_PROFILE
 
 
 class Controller:
@@ -126,5 +126,5 @@ class ActionSubmitJobs(Action):
 
     def submit_one(self, command: str):
         with self.connection.cd(COMPUTE_ROOT_DIR):
-            with self.connection.prefix(f'source {COMPUTE_BASH_PROFILE}'):
+            with self.connection.prefix(f'source {COMPUTE_PROFILE}'):
                 self.connection.run(command, echo=True)  # echo=True for printing out the command
