@@ -112,7 +112,7 @@ setup(
 
         for dir_ in ['build', 'dist']:
             shutil.rmtree(dir_)
-        for file in [self.entrypoint_py, 'setup.py']:
+        for file in [self.entrypoint_py, 'setup.py', f'{f}.app']:
             os.remove(file)
 
     def build_windows_exe(self):
