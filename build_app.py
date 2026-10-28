@@ -108,6 +108,7 @@ setup(
 
         os.rename(f'./dist/{f}.app', f'./{f}.app')
 
+        subprocess.check_call(f'find {f}.app -type f -name "._*" -delete', shell=True)  # '._*' are potentially unsignable files
         subprocess.check_call(f'codesign --force --deep --sign - {f}.app', shell=True)
         subprocess.check_call(f'ditto -c -k --keepParent {f}.app {f}.zip', shell=True)
 
